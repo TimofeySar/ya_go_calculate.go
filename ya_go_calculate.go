@@ -59,7 +59,6 @@ func infixToPostfix(expression string) ([]string, error) {
 			if len(stack) == 0 {
 				return nil, errors.New("некорректное выражение: несогласованные скобки")
 			}
-
 			stack = stack[:len(stack)-1]
 		default:
 			return nil, fmt.Errorf("некорректный символ: %c", ch)
@@ -116,46 +115,31 @@ func evaluatePostfix(postfix []string) (float64, error) {
 	return stack[0], nil
 }
 
-func calcHandler(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodPost {
-		w.WriteHeader(http.StatusMethodNotAllowed)
-		w.Write([]byte(`{"error": "Only POST method is supported"}`))
-		return
-	}
-
-	type request struct {
-		Expression string `json:"expression"`
-	}
-
-	type response struct {
-		Result float64 `json:"result,omitempty"`
-		Error  string  `json:"error,omitempty"`
-	}
-
-	var req request
-	err := json.NewDecoder(r.Body).Decode(&req)
-	if err != nil || req.Expression == "" {
-		w.WriteHeader(http.StatusBadRequest)
-		json.NewEncoder(w).Encode(response{Error: "Invalid request or empty expression"})
-		return
-	}
-
-	result, err := Calc(req.Expression)
-	if err != nil {
-		w.WriteHeader(http.StatusUnprocessableEntity)
-		json.NewEncoder(w).Encode(response{Error: err.Error()})
-		return
-	}
-
-	w.WriteHeader(http.StatusOK)
-	json.NewEncoder(w).Encode(response{Result: result})
-}
-
 func main() {
-	http.HandleFunc("/api/v1/calculat", calcHandler)
-	fmt.Println("Server is running on port 8080...")
-	err := http.ListenAndServe(":8080", nil)
-	if err != nil {
-		fmt.Println("Error starting server:", err)
-	}
+	http.HandleFunc("/api/v1/calculate", func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != http.MethodPost {
+			http.Error(w, "Only POST method is supported", http.StatusMethodNotAllowed)
+			return
+		}
+
+		var req struct {
+			Expression string `json:"expression"`
+		}
+		if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+			http.Error(w, "Invalid request body", http.StatusBadRequest)
+			return
+		}
+
+		result, err := Calc(req.Expression)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusUnprocessableEntity)
+			return
+		}
+
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(map[string]float64{"result": result})
+	})
+
+	fmt.Println("Server running at http://localhost:8080")
+	http.ListenAndServe(":8080", nil)
 }
