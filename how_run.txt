@@ -1,8 +1,0 @@
-что бы запустить очень удобно можно запустить файлик test (предварительно поставить "expression": "сюда вставить пример")(и еще установить requests)
-но если это сложно то можно просто прописать curl --location 'localhost/api/v1/calculate' \
---header 'Content-Type: application/json' \
---data '{
-  "expression": "2+2*2"
-}'
-что бы запусить откройте проектик в vscode и пропишите go run ya_go_calculate.go
-как то так
