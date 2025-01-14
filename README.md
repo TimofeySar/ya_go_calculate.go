@@ -1,36 +1,114 @@
-# ya_go_calculate.go
+# 🧮 Веб-калькулятор
 
-Это проект калькулятора, который я делал ещё в прошлом спринте, но теперь добавил к нему сервер. В итоге получилось что-то, что умеет принимать запросы на подсчёт математических выражений. Работает через API, всё очень просто.
+Проект предоставляет веб-сервис для вычисления математических выражений через HTTP API. Поддерживает базовые арифметические операции и возвращает результаты в формате JSON. 🚀
 
-Как это работает
-Сервер принимает запросы на localhost/api/v1/calculate с JSON, в котором есть поле expression. Вы туда пишете выражение, а он пытается его посчитать. Иногда считает, иногда ругается, ну, как бывает.
+---
 
-чуть чуть примеров
-ввод
-curl --location 'localhost/api/v1/calculate' \
+## 📌 Возможности
+
+```markdown
+- Поддержка операций: `+`, `-`, `*`, `/`, а также использование скобок.
+- Ответы в формате JSON.
+- Обработка ошибок и корректные HTTP-коды.
+```
+## ⚙ Установка и запуск
+
+### 1. Клонирование репозитория
+
+```bash
+git clone https://github.com/TimofeySar/ya_go_calculate.go.git
+cd ya_go_calculate.go
+
+```
+### 2. Запуск приложения
+
+```bash
+go run ./cmd/main.go
+```
+
+💡 Приложение запустится по адресу: [http://localhost:8080](http://localhost:8080).
+
+## 📚 Использование API
+
+### Эндпоинт: `/api/v1/calculate`
+
+#### Пример успешного запроса:
+
+```bash
+curl --location --request POST 'http://localhost:8080/api/v1/calculate' \
 --header 'Content-Type: application/json' \
 --data '{
   "expression": "2+2*2"
 }'
-вывод
+```
+
+Успешный ответ:
+
+```json
 {
   "result": 6
 }
-ввод
-curl --location 'localhost/api/v1/calculate' \
+```
+
+#### Пример с некорректным выражением:
+
+```bash
+curl --location --request POST 'http://localhost:8080/api/v1/calculate' \
 --header 'Content-Type: application/json' \
 --data '{
-  "expression": "2+*"
+  "expression": "2+2*a"
 }'
-вывод
-{'error': 'некорректное выражение: недостаточно цифр'}
-ввод
-curl --location 'localhost/api/v1/calculate' \
---header 'Content-Type: application/json' \
---data '{
-  "expression": "1/0"
-}'
-вывод
-{'error': 'деление на ноль'}
+```
 
+Ответ с ошибкой:
 
+```json
+{
+  "error": "некорректный символ: a"
+}
+```
+💡 Код ответа: `422 Unprocessable Entity`.
+
+#### Пример с ошибкой сервера:
+
+Если произойдет внутренняя ошибка, вы получите:
+
+```json
+{
+  "error": "внутренняя ошибка сервера"
+}
+```
+💡 Код ответа: `500 Internal Server Error`.
+
+## 🌐 Пример использования с Postman
+
+1. Откройте Postman.
+2. Создайте новый запрос и выберите метод `POST`.
+3. Введите URL: `http://localhost:8080/api/v1/calculate`.
+4. Перейдите во вкладку **Body**, выберите `raw` и формат `JSON`.
+5. Введите тело запроса:
+
+    ```json
+    {
+      "expression": "2+2*2"
+    }
+    ```
+
+6. Нажмите **Send**.
+7. Вы получите результат в формате JSON:
+
+    ```json
+    {
+      "result": 6
+    }
+    ```
+
+## 🗂️ Структура проекта
+
+```plaintext
+calc/
+├── main.go          
+├── go.mod           
+├── calculation/     
+│   ├── calc.go      
+│   └── calc_test.go 
