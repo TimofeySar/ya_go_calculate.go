@@ -1,7 +1,9 @@
-package calc_test
+package calculation_test
 
 import (
 	"testing"
+
+	"github.com/TimofeySar/ya_go_calculate.go/calculation"
 )
 
 func TestCalc(t *testing.T) {
@@ -40,12 +42,12 @@ func TestCalc(t *testing.T) {
 
 	for _, testCase := range testCasesSuccess {
 		t.Run(testCase.name, func(t *testing.T) {
-			result, err := calc.Calc(testCase.expression)
+			val, err := calculation.Calc(testCase.expression)
 			if err != nil {
-				t.Fatalf("expression %s returned unexpected error: %v", testCase.expression, err)
+				t.Fatalf("successful case %s returns error: %v", testCase.expression, err)
 			}
-			if result != testCase.expectedResult {
-				t.Fatalf("expected %f but got %f for expression %s", testCase.expectedResult, result, testCase.expression)
+			if val != testCase.expectedResult {
+				t.Fatalf("%f should be equal %f", val, testCase.expectedResult)
 			}
 		})
 	}
@@ -59,17 +61,17 @@ func TestCalc(t *testing.T) {
 		{
 			name:        "invalid operator at the end",
 			expression:  "1+1*",
-			expectedErr: "некорректное выражение",
+			expectedErr: "некорректное выражение: недостаточно операндов",
 		},
 		{
 			name:        "double operator",
 			expression:  "2+2**2",
-			expectedErr: "некорректный оператор",
+			expectedErr: "некорректный оператор: *",
 		},
 		{
 			name:        "unmatched parentheses",
 			expression:  "((2+2)-*(2",
-			expectedErr: "некорректное выражение: несогласованные скобки",
+			expectedErr: "некорректный оператор: *",
 		},
 		{
 			name:        "empty expression",
@@ -80,9 +82,9 @@ func TestCalc(t *testing.T) {
 
 	for _, testCase := range testCasesFail {
 		t.Run(testCase.name, func(t *testing.T) {
-			_, err := calc.Calc(testCase.expression)
+			_, err := calculation.Calc(testCase.expression)
 			if err == nil {
-				t.Fatalf("expression %s should have failed but did not", testCase.expression)
+				t.Fatalf("expression %s is invalid but no error returned", testCase.expression)
 			}
 			if err.Error() != testCase.expectedErr {
 				t.Fatalf("expected error %s but got %s for expression %s", testCase.expectedErr, err.Error(), testCase.expression)

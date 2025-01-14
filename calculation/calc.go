@@ -1,4 +1,4 @@
-package calc
+package calculation
 
 import (
 	"errors"
@@ -24,7 +24,6 @@ func Calc(expression string) (float64, error) {
 func infixToPostfix(expression string) ([]string, error) {
 	var postfix []string
 	var stack []rune
-
 	precedence := map[rune]int{
 		'+': 1,
 		'-': 1,
@@ -37,31 +36,50 @@ func infixToPostfix(expression string) ([]string, error) {
 		return exists
 	}
 
-	for _, ch := range expression {
+	openParentheses := 0
+	lastChar := ' '
+
+	for i, ch := range expression {
 		switch {
 		case ch >= '0' && ch <= '9' || ch == '.':
-			postfix = append(postfix, string(ch))
+			if lastChar >= '0' && lastChar <= '9' {
+				postfix[len(postfix)-1] += string(ch)
+			} else {
+				postfix = append(postfix, string(ch))
+			}
+			lastChar = ch
 		case isOperator(ch):
+			if isOperator(lastChar) || lastChar == '(' || i == 0 {
+				return nil, fmt.Errorf("некорректный оператор: %c", ch)
+			}
 			for len(stack) > 0 && isOperator(stack[len(stack)-1]) && precedence[stack[len(stack)-1]] >= precedence[ch] {
 				postfix = append(postfix, string(stack[len(stack)-1]))
 				stack = stack[:len(stack)-1]
 			}
 			stack = append(stack, ch)
+			lastChar = ch
 		case ch == '(':
 			stack = append(stack, ch)
+			openParentheses++
+			lastChar = ch
 		case ch == ')':
+			if openParentheses == 0 {
+				return nil, errors.New("некорректное выражение: несогласованные скобки")
+			}
 			for len(stack) > 0 && stack[len(stack)-1] != '(' {
 				postfix = append(postfix, string(stack[len(stack)-1]))
 				stack = stack[:len(stack)-1]
 			}
-			if len(stack) == 0 {
-				return nil, errors.New("некорректное выражение: несогласованные скобки")
-			}
-
 			stack = stack[:len(stack)-1]
+			openParentheses--
+			lastChar = ch
 		default:
 			return nil, fmt.Errorf("некорректный символ: %c", ch)
 		}
+	}
+
+	if openParentheses > 0 {
+		return nil, errors.New("некорректное выражение: несогласованные скобки")
 	}
 
 	for len(stack) > 0 {
