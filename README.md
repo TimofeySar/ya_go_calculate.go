@@ -23,7 +23,7 @@ cd ya_go_calculate.go
 ### 2. Запуск приложения
 
 ```bash
-go run ./cmd/main.go
+go run main.go
 ```
 
 💡 Приложение запустится по адресу: [http://localhost:8080](http://localhost:8080).
